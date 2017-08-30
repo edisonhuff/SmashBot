@@ -10,7 +10,6 @@ class Punish(Tactic):
     # How many frames do we have to work with for the punish
     def framesleft():
         opponent_state = globals.opponent_state
-
         # For some dumb reason, the game shows the standing animation as having a large hitstun
         #   manually account for this
         if opponent_state.action == Action.STANDING:
@@ -91,11 +90,15 @@ class Punish(Tactic):
     # given the current gamestate. Either a shine or upsmash
     def canpunish():
         opponent_state = globals.opponent_state
-
+        smashbot_state = globals.smashbot_state
         # Can't punish opponent in shield
         shieldactions = [Action.SHIELD_START, Action.SHIELD, Action.SHIELD_RELEASE, \
             Action.SHIELD_STUN, Action.SHIELD_REFLECT]
         if opponent_state.action in shieldactions:
+            return False
+
+        # Don't punish opponants that are too high
+        if opponent_state.y > (smashbot_state.y + 2):
             return False
 
         left = Punish.framesleft()
@@ -115,20 +118,20 @@ class Punish(Tactic):
             Action.RUNNING]
 
         #TODO: Wrap the shine range into a helper
-        foxshinerange = 11.8
-        inshinerange = globals.gamestate.distance < foxshinerange
+        falcoshinerange = 8.4
+        inshinerange = globals.gamestate.distance < falcoshinerange
 
         if inshinerange and globals.smashbot_state.action in shineablestates:
             return True
 
         #TODO: Wrap this up into a helper
-        foxrunspeed = 2.2
+        falcorunspeed = 1.6
         #TODO: Subtract from this time spent turning or transitioning
         # Assume that we can run at max speed toward our opponent
         # We can only run for framesleft-1 frames, since we have to spend at least one attacking
-        potentialrundistance = (left-1) * foxrunspeed
+        potentialrundistance = (left-1) * falcorunspeed
 
-        if globals.gamestate.distance - potentialrundistance < foxshinerange:
+        if globals.gamestate.distance - potentialrundistance < falcoshinerange:
             return True
         return False
 
@@ -150,20 +153,20 @@ class Punish(Tactic):
         if globals.logger:
             globals.logger.log("Notes", "framesleft: " + str(framesleft) + " ", concat=True)
 
-        # How many frames do we need for an upsmash?
+        # How many frames do we need for a smash?
         # It's 7 frames normally, plus some transition frames
-        # 3 if in shield, shine, or dash/running
+        # 5 if in shield, shine, or dash/running
         framesneeded = 7
         shieldactions = [Action.SHIELD_START, Action.SHIELD, Action.SHIELD_RELEASE, \
             Action.SHIELD_STUN, Action.SHIELD_REFLECT]
         shineactions = [Action.DOWN_B_STUN, Action.DOWN_B_GROUND_START, Action.DOWN_B_GROUND]
         runningactions = [Action.DASHING, Action.RUNNING]
         if smashbot_state.action in shieldactions:
-            framesneeded += 3
+            framesneeded += 5
         if smashbot_state.action in shineactions:
-            framesneeded += 3
+            framesneeded += 5
         if smashbot_state.action in runningactions:
-            framesneeded += 3
+            framesneeded += 5
 
         endposition = opponent_state.x
         isroll = globals.framedata.isroll(opponent_state.character, opponent_state.action)
@@ -242,13 +245,23 @@ class Punish(Tactic):
                     height += speed
 
             distance = abs(endposition - smashbot_endposition)
-            if not slideoff and distance < 14.5 and facing and -5 < height < 8:
-                # Do the upsmash
-                # NOTE: If we get here, we want to delete the chain and start over
-                #   Since the amount we need to charge may have changed
-                self.chain = None
-                self.pickchain(Chains.SmashAttack, [framesleft-framesneeded-1, SMASH_DIRECTION.UP])
-                return
+            #if they're at less than 30% go for waveshine
+            if not slideoff and opponent_state.percent > 30:
+                #timing is different for fsmash
+                # if distance < 14.5 and facing and -5 < height < 8:
+                #     # Do the fsmash
+                #     # NOTE: If we get here, we want to delete the chain and start over
+                #     #   Since the amount we need to charge may have changed
+                #     self.chain = None
+                #     self.pickchain(Chains.SmashAttack, [framesleft-framesneeded-1, SMASH_DIRECTION.FORWARD])
+                #     return
+                if distance < 14.5 and -5 < height < 5:
+                    # Do the downsmash
+                    # NOTE: If we get here, we want to delete the chain and start over
+                    #   Since the amount we need to charge may have changed
+                    self.chain = None
+                    self.pickchain(Chains.SmashAttack, [framesleft-framesneeded-1, SMASH_DIRECTION.DOWN])
+                    return
             # If we're not in attack range, and can't run, then maybe we can wavedash in
             #   Now we need more time for the wavedash. 10 frames of lag, and 3 jumping
             framesneeded = 13
@@ -266,8 +279,8 @@ class Punish(Tactic):
             framesneeded = 4
         if smashbot_state.action in [Action.DOWN_B_STUN, Action.DOWN_B_GROUND_START, Action.DOWN_B_GROUND]:
             framesneeded = 4
-        foxshinerange = 11.8
-        if globals.gamestate.distance < foxshinerange and (framesneeded <= framesleft):
+        falcoshinerange = 8.4
+        if globals.gamestate.distance < falcoshinerange and (framesneeded <= framesleft):
             # Also, don't shine someone in the middle of a roll
             if (not isroll) or (opponent_state.action_frame < 3):
                 self.chain = None

@@ -4,6 +4,7 @@ import Tactics
 from melee.enums import Action, Button
 from Strategies.strategy import Strategy
 from Tactics.punish import Punish
+from Tactics.arialpunish import Arialpunish
 from Tactics.pressure import Pressure
 from Tactics.defend import Defend
 from Tactics.recover import Recover
@@ -76,6 +77,11 @@ class Bait(Strategy):
         # If we can punish our opponent for a laggy move, let's do that
         if Punish.canpunish():
             self.picktactic(Tactics.Punish)
+            return
+
+        # Can we punish our opponent while theyre stunned in the air
+        if Arialpunish.canpunish():
+            self.picktactic(Tactics.Arialpunish)
             return
 
         # Do we need to defend an attack?

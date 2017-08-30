@@ -12,6 +12,9 @@ class SHFFL_DIRECTION(Enum):
     NEUTRAL = 4
 
 class Shffl(Chain):
+    def __init__(self, direction=SHFFL_DIRECTION.FORWARD):
+        self.direction = direction
+
     def step(self, direction=SHFFL_DIRECTION.DOWN):
         smashbot_state = globals.smashbot_state
         opponent_state = globals.opponent_state
@@ -42,8 +45,15 @@ class Shffl(Chain):
             self.interruptible = False
             controller.tilt_analog(Button.BUTTON_MAIN, .5, 0)
             # Only do the L cancel near the end of the animation
-            if smashbot_state.action_frame >= 12:
-                controller.press_button(Button.BUTTON_L)
+            print('falling action frame')
+            print(smashbot_state.action_frame)
+            print('y')
+            print(smashbot_state.y)
+            if smashbot_state.action_frame == 16:
+                if opponent_state.hitstun_frames_left <= 0:
+                    print(opponent_state.hitstun_frames_left)
+                    controller.press_button(Button.BUTTON_L)
+                    return
             return
 
         # Once we're airborn, do an attack
