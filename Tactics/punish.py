@@ -97,10 +97,6 @@ class Punish(Tactic):
         if opponent_state.action in shieldactions:
             return False
 
-        # Don't punish opponants that are too high
-        if opponent_state.y > (smashbot_state.y + 2):
-            return False
-
         left = Punish.framesleft()
         # Will our opponent be invulnerable for the entire punishable window?
         if left <= opponent_state.invulnerability_left:
@@ -118,11 +114,15 @@ class Punish(Tactic):
             Action.RUNNING]
 
         #TODO: Wrap the shine range into a helper
-        falcoshinerange = 8.4
+        falcoshinerange = 9
         inshinerange = globals.gamestate.distance < falcoshinerange
 
         if inshinerange and globals.smashbot_state.action in shineablestates:
             return True
+
+        # Opponents going up (should try to follow up in air)
+        if opponent_state.speed_y_attack > 0:
+            return False
 
         #TODO: Wrap this up into a helper
         falcorunspeed = 1.6
@@ -245,16 +245,16 @@ class Punish(Tactic):
                     height += speed
 
             distance = abs(endposition - smashbot_endposition)
-            #if they're at less than 30% go for waveshine
-            if not slideoff and opponent_state.percent > 30:
+            #if they're at less than 60% go for waveshine
+            if not slideoff and opponent_state.percent > 60:
                 #timing is different for fsmash
-                # if distance < 14.5 and facing and -5 < height < 8:
-                #     # Do the fsmash
-                #     # NOTE: If we get here, we want to delete the chain and start over
-                #     #   Since the amount we need to charge may have changed
-                #     self.chain = None
-                #     self.pickchain(Chains.SmashAttack, [framesleft-framesneeded-1, SMASH_DIRECTION.FORWARD])
-                #     return
+                if framesleft >= 12 and distance < 14.5 and facing and -5 < height < 8:
+                    # Do the fsmash
+                    # NOTE: If we get here, we want to delete the chain and start over
+                    #   Since the amount we need to charge may have changed
+                    self.chain = None
+                    self.pickchain(Chains.SmashAttack, [framesleft-12-1, SMASH_DIRECTION.FORWARD])
+                    return
                 if distance < 14.5 and -5 < height < 5:
                     # Do the downsmash
                     # NOTE: If we get here, we want to delete the chain and start over
@@ -279,7 +279,7 @@ class Punish(Tactic):
             framesneeded = 4
         if smashbot_state.action in [Action.DOWN_B_STUN, Action.DOWN_B_GROUND_START, Action.DOWN_B_GROUND]:
             framesneeded = 4
-        falcoshinerange = 8.4
+        falcoshinerange = 9
         if globals.gamestate.distance < falcoshinerange and (framesneeded <= framesleft):
             # Also, don't shine someone in the middle of a roll
             if (not isroll) or (opponent_state.action_frame < 3):

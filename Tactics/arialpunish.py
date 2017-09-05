@@ -68,23 +68,17 @@ class Arialpunish(Tactic):
         smashbot_state = globals.smashbot_state
         opponent_state = globals.opponent_state
 
-        # Can't punish opponent in shield
-        shieldactions = [Action.SHIELD_START, Action.SHIELD, Action.SHIELD_RELEASE, \
-            Action.SHIELD_STUN, Action.SHIELD_REFLECT]
-        if opponent_state.action in shieldactions:
-            return False
-
         # Only looking to punish opponent in air
         if opponent_state.on_ground:
             return False
 
-        # Don't go for offstage opponents
-        if melee.stages.edgeposition(globals.gamestate.stage) < abs(smashbot_state.x):
-            print(abs(smashbot_state.x))
-            return False
-
         # Don't do this on the ledge
         if smashbot_state.action in [Action.EDGE_HANGING, Action.EDGE_CATCHING]:
+            return False
+
+        # Don't go for offstage opponents
+        if melee.stages.edgeposition(globals.gamestate.stage) < \
+                (abs(opponent_state.x) - 2):
             return False
 
         left = Arialpunish.framesleft()
@@ -102,24 +96,15 @@ class Arialpunish(Tactic):
         falcojumpspeedx = 0.83
         # calculate how far we can go horizontally
         potentialjumpdistancex = (left-1) * falcojumpspeedx
-        distance = (left-1) * opponent_state.speed_air_x_self
-        lastx = opponent_state.x + distance
 
-        # calculate how far up they will go
-        height = opponent_state.y
-        speed = opponent_state.speed_y_attack
-        gravity = globals.framedata.characterdata[opponent_state.character]["Gravity"]
-        termvelocity = globals.framedata.characterdata[opponent_state.character]["TerminalVelocity"]
-        if not opponent_state.on_ground:
-            # Loop through each frame and count the distances
-            for i in range(left - 1):
-                speed -= gravity
-                # We can't go faster than termvelocity downwards
-                speed = max(speed, -termvelocity)
-                height += speed
-                height = max(height, 0)
+        distance = abs(opponent_state.x - smashbot_state.x)
+        speed = abs(opponent_state.speed_x_attack)
+        # Loop through each frame and count the distanes horizontally
+        for i in range(left - 1):
+            # We can't go faster than termvelocity downwards
+            distance += speed
 
-        if lastx - potentialjumpdistancex < falcoshinerange and height < 53:
+        if distance < potentialjumpdistancex:
             return True
         
         return False
@@ -147,7 +132,33 @@ class Arialpunish(Tactic):
         if smashbot_state.action == Action.TURNING:
             facing = not facing
 
-        if opponent_state.y > 12:
+        # calculate how far up they will go
+        height = opponent_state.y
+        speed = max(opponent_state.speed_y_attack, abs(opponent_state.speed_y_self))
+        gravity = globals.framedata.characterdata[opponent_state.character]["Gravity"]
+        termvelocity = globals.framedata.characterdata[opponent_state.character]["TerminalVelocity"]
+
+        # Loop through each frame and count the distances
+        for i in range(framesleft - 1):
+            speed -= gravity
+            # We can't go faster than termvelocity downwards
+            speed = max(speed, -termvelocity)
+            height += speed
+            height = max(height, 0)
+
+
+        #if their final height is less than 0.8 dash to their position (and shine)
+        if height <= 9:
+            print('pass')
+            self.chain = None
+            self.pickchain(Chains.DashDance, [opponent_state.x])
+            return
+        print('doing arial')
+        print(opponent_state.percent)
+        print(height)
+        print(opponent_state.speed_y_self) 
+
+        if height > 12:
             if opponent_state.percent > 70:
                 if facing:
                     print('Full Hop Nair')
@@ -159,14 +170,20 @@ class Arialpunish(Tactic):
             print('Full Hop Dair')
             self.pickchain(Chains.Fhffl, [FHFFL_DIRECTION.DOWN])
             return
-        if opponent_state.percent > 70:
-            if facing:
-                print('Short Hop Nair')
-                self.pickchain(Chains.Shffl, [FHFFL_DIRECTION.NEUTRAL])
+
+        print('shffl: height', height,'framesleft',framesleft)
+        if framesleft < 10:
+            if opponent_state.percent > 70:
+                if facing:
+                    print('Short Hop Nair')
+                    self.pickchain(Chains.Shffl, [FHFFL_DIRECTION.NEUTRAL])
+                    return
+                print('Short Hop Bair')
+                self.pickchain(Chains.Shffl, [SHFFL_DIRECTION.BACK])
                 return
-            print('Short Hop Bair')
-            self.pickchain(Chains.Shffl, [SHFFL_DIRECTION.BACK])
+            print('Short Hop Dair')
+            self.pickchain(Chains.Shffl, [SHFFL_DIRECTION.DOWN])
             return
-        print('Short Hop Dair')
-        self.pickchain(Chains.Shffl, [SHFFL_DIRECTION.DOWN])
+
+        self.pickchain(Chains.DashDance, opponent_state.x)
         return

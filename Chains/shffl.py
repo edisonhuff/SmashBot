@@ -40,20 +40,23 @@ class Shffl(Chain):
                 controller.press_button(Button.BUTTON_Y)
             return
 
+        #if we're in the air try to follow the opponent
+        if not smashbot_state.on_ground:
+            jumpdirection = 1
+            if opponent_state.x < smashbot_state.x:
+                jumpdirection = -1
+            controller.tilt_analog(Button.BUTTON_MAIN, jumpdirection, .5)
+
         # If we're falling, then press down hard to do a fast fall, and press L to L cancel
         if smashbot_state.speed_y_self < 0:
             self.interruptible = False
             controller.tilt_analog(Button.BUTTON_MAIN, .5, 0)
             # Only do the L cancel near the end of the animation
-            print('falling action frame')
             print(smashbot_state.action_frame)
-            print('y')
             print(smashbot_state.y)
-            if smashbot_state.action_frame == 16:
-                if opponent_state.hitstun_frames_left <= 0:
-                    print(opponent_state.hitstun_frames_left)
-                    controller.press_button(Button.BUTTON_L)
-                    return
+            if smashbot_state.action_frame >= 15:
+                controller.press_button(Button.BUTTON_L)
+                return
             return
 
         # Once we're airborn, do an attack

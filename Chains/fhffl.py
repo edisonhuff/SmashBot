@@ -39,17 +39,19 @@ class Fhffl(Chain):
                 controller.press_button(Button.BUTTON_Y)
             return
 
+        #if we're in the air try to follow the opponent
+        if not smashbot_state.on_ground:
+            jumpdirection = 1
+            if opponent_state.x < smashbot_state.x:
+                jumpdirection = -1
+            controller.tilt_analog(Button.BUTTON_MAIN, jumpdirection, .5)
+
         # If we're falling, then press down hard to do a fast fall, and release y
         if smashbot_state.speed_y_self < 0:
-            print(smashbot_state.action_frame)
             controller.release_button(Button.BUTTON_Y);
             self.interruptible = False
             controller.tilt_analog(Button.BUTTON_MAIN, .5, 0)
 
-            print('falling action frame')
-            print(smashbot_state.action_frame)
-            print('y')
-            print(smashbot_state.y)
             # Once we're falling , do an attack
             if not globals.framedata.isattack(smashbot_state.character, smashbot_state.action):
                 # If the C stick wasn't set to middle, then

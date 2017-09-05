@@ -85,7 +85,8 @@ class Recover(Tactic):
         if not facinginwards and smashbot_state.action == Action.TURNING and smashbot_state.action_frame == 1:
             facinginwards = True
 
-        if smashbot_state.action == Action.DEAD_FALL:
+        fallstates = [Action.DEAD_FALL, Action.SPECIAL_FALL_FORWARD, Action.SPECIAL_FALL_BACK]
+        if smashbot_state.action in fallstates:
             x = 0
             if smashbot_state.x < 0:
                 x = 1
