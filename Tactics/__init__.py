@@ -11,3 +11,4 @@ from Tactics.edgeguard import Edgeguard
 from Tactics.infinite import Infinite
 from Tactics.celebrate import Celebrate
 from Tactics.arialpunish import Arialpunish
+from Tactics.halodrop import HaloDrop

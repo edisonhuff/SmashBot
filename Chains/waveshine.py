@@ -21,7 +21,7 @@ class Waveshine(Chain):
             Action.WALK_FAST, Action.EDGE_TEETERING_START, Action.EDGE_TEETERING, Action.CROUCHING, \
             Action.RUNNING]
 
-        jcshine = (smashbot_state.action == Action.KNEE_BEND) and (smashbot_state.action_frame == 3)
+        jcshine = (smashbot_state.action == Action.KNEE_BEND) and (smashbot_state.action_frame == 5)
         lastdashframe = (smashbot_state.action == Action.DASHING) and (smashbot_state.action_frame == 12)
 
         # If somehow we are off stage, give up immediately
@@ -39,7 +39,7 @@ class Waveshine(Chain):
             return
 
         # If we're in the early knee bend frames, just hang on and wait
-        if (smashbot_state.action == Action.KNEE_BEND) and (smashbot_state.action_frame < 3):
+        if (smashbot_state.action == Action.KNEE_BEND) and (smashbot_state.action_frame < 5):
             controller.empty_input()
             return
 
@@ -66,7 +66,7 @@ class Waveshine(Chain):
         # Jump out of shine
         if isInShineStart:
             self.interruptible = False
-            if smashbot_state.action_frame >= 3:
+            if smashbot_state.action_frame >= 5:
                 controller.press_button(Button.BUTTON_Y)
                 return
             else:

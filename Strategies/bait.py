@@ -13,6 +13,7 @@ from Tactics.edgeguard import Edgeguard
 from Tactics.infinite import Infinite
 from Tactics.celebrate import Celebrate
 from Tactics.wait import Wait
+from Tactics.halodrop import HaloDrop
 
 class Bait(Strategy):
     def __str__(self):
@@ -45,12 +46,12 @@ class Bait(Strategy):
             self.picktactic(Tactics.Wait)
             return
 
-        if Recover.needsrecovery():
-            self.picktactic(Tactics.Recover)
+        if HaloDrop.onHalo():
+            self.picktactic(HaloDrop)
             return
 
-        if Celebrate.deservescelebration():
-            self.picktactic(Tactics.Celebrate)
+        if Recover.needsrecovery():
+            self.picktactic(Tactics.Recover)
             return
 
         # Difficulty 5 is a debug / training mode
@@ -64,15 +65,14 @@ class Bait(Strategy):
             self.picktactic(Tactics.Defend)
             return
 
-        # If we can infinite our opponent, do that!
-        if Infinite.caninfinite():
-            self.picktactic(Tactics.Infinite)
-            return
-
         # Can we edge guard them?
         if Edgeguard.canedgeguard():
             self.picktactic(Tactics.Edgeguard)
             return
+
+        # if Techchase.cantechChase():
+        #     self.picktactic(Tactics.Techchase)
+        #     return
 
         # If we can punish our opponent for a laggy move, let's do that
         if Punish.canpunish():

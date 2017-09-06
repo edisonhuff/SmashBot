@@ -75,7 +75,7 @@ class Grabedge(Chain):
             self.interruptible = False
 
             # Should we shine?
-            canhit = globals.gamestate.distance < 11.8 and opponent_state.invulnerability_left == 0
+            canhit = globals.gamestate.distance < 9 and opponent_state.invulnerability_left == 0
             if (smashbot_state.y < -15) or canhit:
                 controller.press_button(Button.BUTTON_B)
                 controller.tilt_analog(melee.Button.BUTTON_MAIN, 0.5, 0)

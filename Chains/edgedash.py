@@ -26,7 +26,9 @@ class Edgedash(Chain):
             controller.empty_input()
             return
 
+        # Not working for Falco :(
         # Do a firefox stall
+        print(smashbot_state.action)
         if not self.hasstalled:
             # If we are able to let go of the edge, do it
             if smashbot_state.action == Action.EDGE_HANGING:
@@ -42,9 +44,14 @@ class Edgedash(Chain):
                 controller.tilt_analog(Button.BUTTON_C, x, 0.5)
                 return
 
-            # Once we're falling, UP-B
+            # Once we're falling, jump
             if smashbot_state.action == Action.FALLING:
                 self.interruptible = False
+                controller.press_button(Button.BUTTON_Y)
+                return
+
+            # Once we've started jumping Up B to stall
+            if smashbot_state.action == Action.JUMPING_ARIAL_FORWARD:
                 controller.tilt_analog(Button.BUTTON_MAIN, 0.5, 1)
                 controller.press_button(Button.BUTTON_B)
                 return
@@ -77,7 +84,8 @@ class Edgedash(Chain):
         # Jumping, stay in the chain and DI in
         if smashbot_state.action == Action.JUMPING_ARIAL_FORWARD:
             # Airdodge back into the stage
-            if globals.gamestate.frame - self.letgoframe >= 4:
+            if globals.gamestate.frame - self.letgoframe >= 6:
+                print(globals.gamestate.frame - self.letgoframe)
                 x = 0
                 if smashbot_state.x < 0:
                     x = 1

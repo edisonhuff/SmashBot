@@ -90,7 +90,7 @@ class Arialpunish(Tactic):
             return False
 
         #TODO: Wrap the shine range into a helper
-        falcoshinerange = 8.4
+        falcoshinerange = 9
 
         #TODO: Wrap this up into a helper
         falcojumpspeedx = 0.83
@@ -101,7 +101,6 @@ class Arialpunish(Tactic):
         speed = abs(opponent_state.speed_x_attack)
         # Loop through each frame and count the distanes horizontally
         for i in range(left - 1):
-            # We can't go faster than termvelocity downwards
             distance += speed
 
         if distance < potentialjumpdistancex:
@@ -133,45 +132,45 @@ class Arialpunish(Tactic):
             facing = not facing
 
         # calculate how far up they will go
-        height = opponent_state.y
-        speed = max(opponent_state.speed_y_attack, abs(opponent_state.speed_y_self))
+        apex = opponent_state.y
+        speed = opponent_state.speed_y_attack
         gravity = globals.framedata.characterdata[opponent_state.character]["Gravity"]
         termvelocity = globals.framedata.characterdata[opponent_state.character]["TerminalVelocity"]
+
+        # if not going up set speed to speed y self
+        if opponent_state.speed_y_attack == 0:
+            speed = opponent_state.speed_y_self
 
         # Loop through each frame and count the distances
         for i in range(framesleft - 1):
             speed -= gravity
             # We can't go faster than termvelocity downwards
             speed = max(speed, -termvelocity)
-            height += speed
-            height = max(height, 0)
+            apex += speed
+            apex = max(apex, 0)
 
 
-        #if their final height is less than 0.8 dash to their position (and shine)
-        if height <= 9:
-            print('pass')
+        #if their final apex is less than 0.9 dash to their position (and shine)
+        if apex <= 9:
             self.chain = None
             self.pickchain(Chains.DashDance, [opponent_state.x])
             return
-        print('doing arial')
-        print(opponent_state.percent)
-        print(height)
-        print(opponent_state.speed_y_self) 
 
-        if height > 12:
-            if opponent_state.percent > 70:
-                if facing:
-                    print('Full Hop Nair')
-                    self.pickchain(Chains.Fhffl, [FHFFL_DIRECTION.NEUTRAL])
-                    return
-                print('Full Hop Bair')
-                self.pickchain(Chains.Fhffl, [FHFFL_DIRECTION.BACK])
-                return
-            print('Full Hop Dair')
-            self.pickchain(Chains.Fhffl, [FHFFL_DIRECTION.DOWN])
-            return
+        # if height > 12:
+        #     print('fhffl: height', height,'framesleft',framesleft)
+        #     if opponent_state.percent > 70:
+        #         if facing:
+        #             print('Full Hop Nair')
+        #             self.pickchain(Chains.Fhffl, [FHFFL_DIRECTION.NEUTRAL])
+        #             return
+        #         print('Full Hop Bair')
+        #         self.pickchain(Chains.Fhffl, [FHFFL_DIRECTION.BACK])
+        #         return
+        #     print('Full Hop Dair')
+        #     self.pickchain(Chains.Fhffl, [FHFFL_DIRECTION.DOWN])
+        #     return
 
-        print('shffl: height', height,'framesleft',framesleft)
+        # print('shffl: height', height,'framesleft',framesleft)
         if framesleft < 10:
             if opponent_state.percent > 70:
                 if facing:
@@ -185,5 +184,6 @@ class Arialpunish(Tactic):
             self.pickchain(Chains.Shffl, [SHFFL_DIRECTION.DOWN])
             return
 
-        self.pickchain(Chains.DashDance, opponent_state.x)
+        self.chain = None
+        self.pickchain(Chains.DashDance, [opponent_state.x])
         return

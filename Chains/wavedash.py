@@ -30,13 +30,13 @@ class Wavedash(Chain):
 
         # We shouldn't need these. It's just there in case we miss the knee bend somehow
         jumping = [Action.JUMPING_ARIAL_FORWARD, Action.JUMPING_ARIAL_BACKWARD]
-        jumpcancel = (smashbot_state.action == Action.KNEE_BEND) and (smashbot_state.action_frame == 3)
+        jumpcancel = (smashbot_state.action == Action.KNEE_BEND) and (smashbot_state.action_frame == 5)
 
         isInShineStart = smashbot_state.action in [Action.DOWN_B_STUN, Action.DOWN_B_GROUND_START, \
             Action.DOWN_B_GROUND]
 
         # Jump out of shine
-        if isInShineStart and smashbot_state.action_frame >= 3 and smashbot_state.on_ground:
+        if isInShineStart and smashbot_state.action_frame >= 5 and smashbot_state.on_ground:
             self.interruptible = False
             controller.press_button(Button.BUTTON_Y)
             return

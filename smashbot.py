@@ -97,7 +97,7 @@ while True:
         strategy.step()
     #If we're at the character select screen, choose our character
     elif gamestate.menu_state == melee.enums.Menu.CHARACTER_SELECT:
-        melee.menuhelper.choosecharacter(character=melee.enums.Character.FOX,
+        melee.menuhelper.choosecharacter(character=melee.enums.Character.FALCO,
             gamestate=gamestate, controller=controller, swag=True, start=False)
     #If we're at the postgame scores screen, spam START
     elif gamestate.menu_state == melee.enums.Menu.POSTGAME_SCORES:

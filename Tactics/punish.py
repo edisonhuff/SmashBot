@@ -157,16 +157,20 @@ class Punish(Tactic):
         # It's 7 frames normally, plus some transition frames
         # 5 if in shield, shine, or dash/running
         framesneeded = 7
+        fsmashframesneeded = 12
         shieldactions = [Action.SHIELD_START, Action.SHIELD, Action.SHIELD_RELEASE, \
             Action.SHIELD_STUN, Action.SHIELD_REFLECT]
         shineactions = [Action.DOWN_B_STUN, Action.DOWN_B_GROUND_START, Action.DOWN_B_GROUND]
         runningactions = [Action.DASHING, Action.RUNNING]
         if smashbot_state.action in shieldactions:
             framesneeded += 5
+            fsmashframesneeded += 5
         if smashbot_state.action in shineactions:
             framesneeded += 5
+            fsmashframesneeded += 5
         if smashbot_state.action in runningactions:
             framesneeded += 5
+            fsmashframesneeded += 5
 
         endposition = opponent_state.x
         isroll = globals.framedata.isroll(opponent_state.character, opponent_state.action)
@@ -248,12 +252,12 @@ class Punish(Tactic):
             #if they're at less than 60% go for waveshine
             if not slideoff and opponent_state.percent > 60:
                 #timing is different for fsmash
-                if framesleft >= 12 and distance < 14.5 and facing and -5 < height < 8:
+                if framesleft >= fsmashframesneeded and distance < 14.5 and facing and -5 < height < 8:
                     # Do the fsmash
                     # NOTE: If we get here, we want to delete the chain and start over
                     #   Since the amount we need to charge may have changed
                     self.chain = None
-                    self.pickchain(Chains.SmashAttack, [framesleft-12-1, SMASH_DIRECTION.FORWARD])
+                    self.pickchain(Chains.SmashAttack, [framesleft-framesneeded-1, SMASH_DIRECTION.FORWARD])
                     return
                 if distance < 14.5 and -5 < height < 5:
                     # Do the downsmash
@@ -274,11 +278,12 @@ class Punish(Tactic):
         #TODO: Wrap the shine range into a helper
         framesneeded = 1
         if smashbot_state.action == Action.DASHING:
-            framesneeded = 2
+            framesneeded = 4
         if smashbot_state.action in [Action.SHIELD_RELEASE, Action.SHIELD]:
-            framesneeded = 4
+            framesneeded = 6
         if smashbot_state.action in [Action.DOWN_B_STUN, Action.DOWN_B_GROUND_START, Action.DOWN_B_GROUND]:
-            framesneeded = 4
+            framesneeded = 6
+
         falcoshinerange = 9
         if globals.gamestate.distance < falcoshinerange and (framesneeded <= framesleft):
             # Also, don't shine someone in the middle of a roll

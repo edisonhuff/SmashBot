@@ -29,12 +29,17 @@ class Edgestall(Chain):
             controller.tilt_analog(Button.BUTTON_MAIN, x, 0.5)
             return
 
-        # Once we're falling, UP-B
-        if smashbot_state.action == Action.FALLING:
-            self.interruptible = False
-            controller.tilt_analog(Button.BUTTON_MAIN, 0.5, 1)
-            controller.press_button(Button.BUTTON_B)
-            return
+            # Once we're falling, jump
+            if smashbot_state.action == Action.FALLING:
+                self.interruptible = False
+                controller.press_button(Button.BUTTON_Y)
+                return
+
+            # Once we've started jumping Up B to stall
+            if smashbot_state.action == Action.JUMPING_ARIAL_FORWARD:
+                controller.tilt_analog(Button.BUTTON_MAIN, 0.5, 1)
+                controller.press_button(Button.BUTTON_B)
+                return
 
         self.interruptible = True
         controller.empty_input()
